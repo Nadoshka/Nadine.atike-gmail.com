@@ -7,16 +7,17 @@ import SortedReview from './components/SortedReviews';
 
 
 let allReviews = [];
+const reviewsPerPage = 10;
 
 export default function App() {
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(allReviews);
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     fetch('http://localhost:3000/reviews')
       .then(response => response.json())
       .then(recievedReviews => {
-        allReviews=recievedReviews.all;
+        allReviews = recievedReviews.all;
         setReviews(recievedReviews.all);
       });
   },[]); 
@@ -30,7 +31,7 @@ export default function App() {
   const handleSortChange = event => {
     const sortValue = event.target.value;
     const reviewsToSort = [...reviews];
-    const sortedReviews = reviewsToSort.sort((a, b)=> {
+    const sortedReviews = reviewsToSort.sort((a, b) => {
       if (sortValue === "travel-date") {
         if (a.travelDate > b.travelDate){
           return -1;
@@ -65,7 +66,10 @@ export default function App() {
       <SortedReview onSortChange={handleSortChange}/>
 
       <ul>
-        {reviews.map((review, index) => 
+        {reviews.map((review, index) => {
+          //if (index < page number * number of reviews per page && > (current page number -1)* number of reviews per page
+          if(index < page * reviewsPerPage && index > (page - 1) * reviewsPerPage)
+          return (
           <li key={index}>
           {review.traveledWith}
           <AccommodationBox 
@@ -75,9 +79,11 @@ export default function App() {
             entryDate={review.entryDate}
             travelDate={review.travelDate}/>
           </li>
-        )}
+          );
+        })}
       </ul>
-      <Pagination count={10} page={page} onChange={handleChange}/>
+      {/* count={reviews.length=200 / reviewsPerPage=10}*/}
+      <Pagination count={reviews.length / reviewsPerPage} page={page} onChange={handleChange}/>
     </div>
   )
 }
